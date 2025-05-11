@@ -31,6 +31,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/products" element={<ProductList />} />
           <Route path="/category/:category" element={<ProductList />} />
+          <Route path="/sale" element={<ProductList />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/account" element={<Account />} />
           <Route path="/cart" element={<Cart />} />
@@ -51,3 +52,4 @@ const App = () => (
 );
 
 export default App;
+

@@ -16,4 +16,5 @@ export interface Product {
   stock: number;
   featured: boolean;
   newArrival: boolean;
+  onSale?: boolean;
 }

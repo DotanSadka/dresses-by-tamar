@@ -39,6 +39,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
               {product.discount}% OFF
             </span>
           )}
+
+          {product.newArrival && !product.discount && (
+            <span className="absolute top-2 left-2 bg-purple-400 text-white text-xs font-medium px-2 py-1 rounded">
+              NEW
+            </span>
+          )}
           
           <button
             onClick={handleWishlist}
@@ -72,7 +78,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               {[...Array(5)].map((_, i) => (
                 <svg 
                   key={i} 
-                  className={`h-3 w-3 ${i < product.rating ? 'text-yellow-400' : 'text-gray-300'}`} 
+                  className={`h-3 w-3 ${i < Math.floor(product.rating) ? 'text-yellow-400' : 'text-gray-300'}`} 
                   fill="currentColor" 
                   viewBox="0 0 20 20"
                 >

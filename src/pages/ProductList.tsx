@@ -1,23 +1,25 @@
 
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Filter } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import PageLayout from "@/components/PageLayout";
+import PageHeader from "@/components/PageHeader";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/types/product";
-import { products, getProductsByCategory } from "@/data/products";
+import { products, getProductsByCategory, searchProducts, onSaleProducts } from "@/data/products";
 
 const ProductList = () => {
+  const navigate = useNavigate();
   const { category } = useParams();
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q");
+  const filter = searchParams.get("filter");
   
   const isMobile = useIsMobile();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -25,6 +27,7 @@ const ProductList = () => {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState("featured");
+  const [searchQuery, setSearchQuery] = useState(query || "");
   
   // Extract all unique sizes and colors from products
   const allSizes = Array.from(new Set(products.flatMap(p => p.sizes)));
@@ -39,6 +42,13 @@ const ProductList = () => {
       filtered = getProductsByCategory(category);
     }
     
+    // Filter by special collections
+    if (filter === "sale") {
+      filtered = filtered.filter(p => p.onSale);
+    } else if (filter === "new") {
+      filtered = filtered.filter(p => p.newArrival);
+    }
+    
     // Filter by search query if provided
     if (query) {
       const lowercaseQuery = query.toLowerCase();
@@ -50,7 +60,7 @@ const ProductList = () => {
     }
     
     setFilteredProducts(filtered);
-  }, [category, query]);
+  }, [category, query, filter]);
   
   // Apply filters
   const applyFilters = () => {
@@ -59,6 +69,13 @@ const ProductList = () => {
     // Category filter
     if (category && category !== "all") {
       filtered = filtered.filter(p => p.category.toLowerCase() === category.toLowerCase());
+    }
+    
+    // Special collections filter
+    if (filter === "sale") {
+      filtered = filtered.filter(p => p.onSale);
+    } else if (filter === "new") {
+      filtered = filtered.filter(p => p.newArrival);
     }
     
     // Search query filter
@@ -137,6 +154,14 @@ const ProductList = () => {
     applyFilters();
   }, [priceRange, selectedSizes, selectedColors, sortOption]);
   
+  // Handle search submit
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+  
   // Filter component for both desktop sidebar and mobile dialog
   const FilterComponent = () => (
     <div className="space-y-6">
@@ -203,23 +228,38 @@ const ProductList = () => {
     </div>
   );
   
+  const getTitle = () => {
+    if (filter === "sale") return "Sale Items";
+    if (filter === "new") return "New Arrivals";
+    if (category) return `${category.charAt(0).toUpperCase() + category.slice(1)} Dresses`;
+    return "All Dresses";
+  };
+  
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-purple-50">
-      <Navbar />
+    <PageLayout>
+      <PageHeader 
+        title={getTitle()}
+        description={query ? `Search results for: "${query}"` : "Find your perfect style"}
+      />
       
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">
-          {category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Dresses` : 'All Dresses'}
-          {query && <span className="font-normal text-gray-600"> - Search: "{query}"</span>}
-        </h1>
-        
-        {/* Top bar with sort and filter */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="text-sm text-gray-500">
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
-          </div>
+      <div className="container mx-auto px-4 pb-8">
+        {/* Top bar with search, sort and filter */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          {/* Search bar */}
+          <form onSubmit={handleSearch} className="w-full md:w-auto flex">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search dresses..."
+              className="border border-r-0 border-gray-300 rounded-l-md py-2 px-4 w-full md:w-64"
+            />
+            <Button type="submit" variant="default" className="rounded-l-none">
+              <Search className="h-4 w-4" />
+            </Button>
+          </form>
           
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-4 items-center self-end">
             {/* Sort dropdown */}
             <select
               value={sortOption}
@@ -250,6 +290,10 @@ const ProductList = () => {
           </div>
         </div>
         
+        <div className="text-sm text-gray-500 mb-4">
+          {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+        </div>
+        
         <div className="flex flex-col md:flex-row gap-6">
           {/* Filter sidebar (desktop only) */}
           {!isMobile && (
@@ -278,9 +322,7 @@ const ProductList = () => {
           </div>
         </div>
       </div>
-      
-      <Footer />
-    </div>
+    </PageLayout>
   );
 };
 
