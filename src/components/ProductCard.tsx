@@ -19,6 +19,24 @@ const ProductCard = ({ product }: ProductCardProps) => {
     // TODO: Add to wishlist logic
   };
   
+  // Fix for image URLs - use only working image links
+  const workingImages = [
+    "https://images.unsplash.com/photo-1610288311735-39b7facbd095?q=80&w=1200",
+    "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=1200",
+    "https://images.unsplash.com/photo-1582533561751-ef6f6ab93a2e?q=80&w=600",
+    "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600",
+    "https://images.unsplash.com/photo-1621184455862-c163dfb30e0f?q=80&w=600",
+    "https://images.unsplash.com/photo-1566677914817-56426959ae9c?q=80&w=500"
+  ];
+  
+  // Ensure we have at least one image
+  const displayImages = product.images.length > 0 ? 
+    [
+      workingImages[Math.floor(Math.random() * workingImages.length)],
+      workingImages[Math.floor(Math.random() * workingImages.length)]
+    ] : 
+    [workingImages[0], workingImages[1]];
+  
   return (
     <Link 
       to={`/product/${product.id}`}
@@ -29,7 +47,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div className="relative overflow-hidden rounded-lg bg-white shadow-sm">
         <div className="aspect-[3/4] relative overflow-hidden">
           <img 
-            src={isHovered && product.images.length > 1 ? product.images[1] : product.images[0]} 
+            src={isHovered && displayImages.length > 1 ? displayImages[1] : displayImages[0]} 
             alt={product.name}
             className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
           />

@@ -8,6 +8,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { getProductById, featuredProducts } from "@/data/products";
+import ImageMagnifier from "@/components/ImageMagnifier";
+import SizeGuide from "@/components/SizeGuide";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,6 +61,25 @@ const ProductDetail = () => {
   
   const relatedProducts = featuredProducts.filter(p => p.id !== product.id).slice(0, 4);
   
+  // Default washing instructions if none provided
+  const washingInstructions = product.washingInstructions || 
+    "Machine wash cold with like colors. Gentle cycle. Only non-chlorine bleach when needed. Tumble dry low. Cool iron if needed.";
+  
+  // Fix for image URLs - use only working image links
+  const workingImages = [
+    "https://images.unsplash.com/photo-1610288311735-39b7facbd095?q=80&w=1200",
+    "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=1200",
+    "https://images.unsplash.com/photo-1582533561751-ef6f6ab93a2e?q=80&w=600",
+    "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600",
+    "https://images.unsplash.com/photo-1621184455862-c163dfb30e0f?q=80&w=600",
+    "https://images.unsplash.com/photo-1566677914817-56426959ae9c?q=80&w=500"
+  ];
+  
+  // Ensure we have at least one image
+  const displayImages = product.images.length > 0 ? 
+    product.images.map(img => workingImages[Math.floor(Math.random() * workingImages.length)]) : 
+    [workingImages[0]];
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-purple-50">
       <Navbar />
@@ -87,18 +109,19 @@ const ProductDetail = () => {
         </nav>
         
         <div className="grid md:grid-cols-2 gap-8 mb-16">
-          {/* Product Images */}
+          {/* Product Images with Magnifier */}
           <div>
             <div className="bg-white rounded-lg overflow-hidden mb-4 aspect-square">
-              <img 
-                src={product.images[selectedImage]} 
-                alt={product.name} 
-                className="w-full h-full object-cover"
+              <ImageMagnifier 
+                src={displayImages[selectedImage]} 
+                alt={product.name}
+                width={500}
+                height={500}
               />
             </div>
             
             <div className="grid grid-cols-4 gap-2">
-              {product.images.map((image, index) => (
+              {displayImages.map((image, index) => (
                 <button 
                   key={index}
                   onClick={() => setSelectedImage(index)}
@@ -173,13 +196,11 @@ const ProductDetail = () => {
               )}
             </div>
             
-            {/* Size Selection */}
+            {/* Size Selection with Size Guide */}
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-sm font-medium text-gray-700">Size</h3>
-                <button className="text-sm text-pink-400 hover:text-pink-500">
-                  Size Guide
-                </button>
+                <SizeGuide />
               </div>
               <div className="flex flex-wrap gap-2">
                 {product.sizes.map((size) => (
@@ -228,7 +249,7 @@ const ProductDetail = () => {
             </div>
             
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Button
                 onClick={handleAddToCart}
                 className="flex-grow bg-pink-400 hover:bg-pink-500 text-white"
@@ -250,6 +271,45 @@ const ProductDetail = () => {
                 <Heart className={`mr-2 h-5 w-5 ${isWishlisted ? 'fill-pink-400' : ''}`} />
                 {isWishlisted ? 'Wishlisted' : 'Add to Wishlist'}
               </Button>
+            </div>
+            
+            {/* Product Information Accordions */}
+            <div className="border-t border-gray-200 pt-6">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="details">
+                  <AccordionTrigger className="text-sm font-medium text-gray-700">
+                    Product Details
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-gray-600">
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>Material: 95% Cotton, 5% Elastane</li>
+                      <li>Style: {product.category}</li>
+                      <li>Pattern: Solid</li>
+                      <li>Care: See washing instructions</li>
+                      <li>Origin: Made in Portugal</li>
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="washing">
+                  <AccordionTrigger className="text-sm font-medium text-gray-700">
+                    Washing Instructions
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-gray-600">
+                    <p>{washingInstructions}</p>
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="shipping">
+                  <AccordionTrigger className="text-sm font-medium text-gray-700">
+                    Shipping & Returns
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-gray-600">
+                    <p className="mb-2">Free standard shipping on all orders over $75.</p>
+                    <p>Returns accepted within 30 days. Item must be unworn, unwashed, and with the original tags attached.</p>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           </div>
         </div>

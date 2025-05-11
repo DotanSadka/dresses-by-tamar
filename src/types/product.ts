@@ -17,4 +17,5 @@ export interface Product {
   featured: boolean;
   newArrival: boolean;
   onSale?: boolean;
+  washingInstructions?: string;
 }
